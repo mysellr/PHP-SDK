@@ -143,15 +143,9 @@ class Mysellr
    * Maps aliases to MySellr domains.
    */
   public static $DOMAIN_MAP = array(
-    'api'       => 'http://ote.mysellr.com/market/api/',
-    'www'       => 'http://ote.mysellr.com/market/',
-  );
-/*
-  public static $DOMAIN_MAP = array(
     'api'       => 'https://market.mysellr.com/api/',
     'www'       => 'https://market.mysellr.com/',
   );
-*/
   
   /**
    * The Application ID.
