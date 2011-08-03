@@ -487,7 +487,6 @@ class Mysellr
     // the cached access token has changed.
     $access_token = $this->getAccessToken();
     if ($access_token &&
-        $access_token != $this->getApplicationAccessToken() &&
         !($user && $persisted_access_token == $access_token))
     {
       $user = $this->getUserFromAccessToken();
@@ -618,18 +617,6 @@ class Mysellr
     } catch (MysellrApiException $e) {
       return 0;
     }
-  }
-  
-  /**
-   * Returns the access token that should be used for logged out
-   * users when no authorization code is available.
-   *
-   * @return String the application access token, useful for
-   * gathering public information about users and applications.
-   */
-  protected function getApplicationAccessToken()
-  {
-    return $this->appId.'|'.$this->apiSecret;
   }
   
   /**
