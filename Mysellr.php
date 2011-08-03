@@ -122,9 +122,9 @@ class Mysellr
    */
   public static $CURL_OPTS = array(
     CURLOPT_CONNECTTIMEOUT => 10,
-    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_RETURNTRANSFER => TRUE,
     CURLOPT_TIMEOUT        => 60,
-    CURLOPT_USERAGENT      => 'mysellr-php-1.0',
+    CURLOPT_USERAGENT      => 'mysellr-php-1.0'
   );
   
   /**
@@ -144,7 +144,7 @@ class Mysellr
    */
   public static $DOMAIN_MAP = array(
     'api'       => 'https://market.mysellr.com/api/',
-    'www'       => 'https://market.mysellr.com/',
+    'www'       => 'https://market.mysellr.com/'
   );
   
   /**
@@ -345,7 +345,6 @@ class Mysellr
     // first establish access token to be the application
     // access token, in case we navigate to the /auth/access
     // endpoint, where SOME access token is required.
-    $this->setAccessToken($this->getApplicationAccessToken());
     if ($user_access_token = $this->getUserAccessToken())
     {
       $this->setAccessToken($user_access_token);
@@ -391,7 +390,7 @@ class Mysellr
       return FALSE; // respect the signed request's data, even
                     // if there's an authorization code or something else
     }
-
+    
     $code = $this->getCode();
     if ($code && $code != $this->getPersistentData('code'))
     {
@@ -536,53 +535,6 @@ class Mysellr
   }
   
   /**
-   * Get a Logout URL suitable for use with redirects.
-   *
-   * The parameters:
-   * - next: the url to go to after a successful logout
-   *
-   * @param Array $params provide custom parameters
-   * @return String the URL for the logout flow
-   */
-  public function getLogoutUrl($params=array()) {
-    return $this->getUrl(
-      'www',
-      'auth/logout',
-      array_merge(array(
-        'next' => $this->getCurrentUrl(),
-        'access_token' => $this->getAccessToken(),
-        't' => time()
-      ), $params)
-    );
-  }
-  
-  /**
-   * Get a login status URL to fetch the status from MySellr.
-   *
-   * The parameters:
-   * - ok_session: the URL to go to if a session is found
-   * - no_session: the URL to go to if the user is not connected
-   * - no_user: the URL to go to if the user is not signed into facebook
-   *
-   * @param Array $params provide custom parameters
-   * @return String the URL for the logout flow
-   */
-  public function getLoginStatusUrl($params=array())
-  {
-    return $this->getUrl(
-      'www',
-      'auth/login_status',
-      array_merge(array(
-        'client_id' => $this->getAppId(),
-        'no_session' => $this->getCurrentUrl(),
-        'no_user' => $this->getCurrentUrl(),
-        'ok_session' => $this->getCurrentUrl(),
-        't' => time()
-      ), $params)
-    );
-  }
-  
-  /**
    * Make an API call.
    *
    * @param Array $params the API call parameters
@@ -709,13 +661,13 @@ class Mysellr
    * @return mixed an access token exchanged for the authorization code, or
    * false if an access token could not be generated.
    */
-  protected function getAccessTokenFromCode($code)
+  public function getAccessTokenFromCode($code)
   {
     if (empty($code))
     {
       return FALSE;
     }
-
+    
     try {
       $access_token_response =
         $this->_oauthRequest(
@@ -733,7 +685,7 @@ class Mysellr
       // In any event, we don't have an access token, so say so.
       return FALSE;
     }
-
+    
     if (empty($access_token_response))
     {
       return FALSE;
@@ -775,7 +727,7 @@ class Mysellr
         $params[$key] = json_encode($value);
       }
     }
-
+    
     return $this->makeRequest($url, $params);
   }
   
@@ -796,7 +748,7 @@ class Mysellr
       $ch = curl_init();
     }
     
-    $allowedMethods = array('GET', 'POST', 'DELETE');
+    $allowedMethods = array('GET', 'POST');
     
     $opts = self::$CURL_OPTS;
     
@@ -838,7 +790,7 @@ class Mysellr
     curl_setopt_array($ch, $opts);
     $result = curl_exec($ch);
 		
-    // CURLE_SSL_CACERT
+		// CURLE_SSL_CACERT
     if (curl_errno($ch) == 60)
     {
       self::errorLog('Invalid or no certificate authority found, '.
