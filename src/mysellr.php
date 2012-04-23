@@ -35,9 +35,9 @@ if (!function_exists('json_decode')) {
 /**
  * Thrown when an API call returns an exception.
  *
- * @author Sulaeman <sulaeman@mysellr.com>
+ * @author Haveiss <haveiss@mysellr.com>
  */
-class MysellrApiException extends Exception
+class MySellrApiException extends Exception
 {
   /**
    * The result from the API server that represents the exception information.
@@ -110,7 +110,7 @@ class MysellrApiException extends Exception
   }
 }
 
-class Mysellr
+class MySellr
 {
   /**
    * Version.
@@ -124,6 +124,7 @@ class Mysellr
     CURLOPT_CONNECTTIMEOUT => 10,
     CURLOPT_RETURNTRANSFER => TRUE,
     CURLOPT_TIMEOUT        => 60,
+    CURLOPT_SSL_VERIFYPEER => FALSE,
     CURLOPT_USERAGENT      => 'mysellr-php-1.0'
   );
   
@@ -409,12 +410,16 @@ class Mysellr
       
       return FALSE;
     }
+    
+    if($this->getPersistentData('access_token')){
+      return $this->getPersistentData('access_token');
+    }
 
     // as a fallback, just return whatever is in the persistent
     // store, knowing nothing explicit (signed request, authorization
     // code, etc.) was present to shadow it (or we saw a code in $_REQUEST,
     // but it's the same as what's in the persistent store)
-    return $this->getPersistentData('access_token');
+    return $this->appId.'|'.$this->apiSecret;
   }
   
   /**
@@ -614,7 +619,7 @@ class Mysellr
     try {
       $user_info = $this->api('/me');
       return $user_info['store_id'];
-    } catch (MysellrApiException $e) {
+    } catch (MySellrApiException $e) {
       return 0;
     }
   }
@@ -667,7 +672,7 @@ class Mysellr
             't' => time()
           )
         );
-    } catch (MysellrApiException $e) {
+    } catch (MySellrApiException $e) {
       // most likely that user very recently revoked authorization.
       // In any event, we don't have an access token, so say so.
       return FALSE;
@@ -697,7 +702,7 @@ class Mysellr
    * @param String $path the path (required)
    * @param Array $params the query/post data
    * @return the decoded response object
-   * @throws MysellrApiException
+   * @throws MySellrApiException
    */
   protected function _oauthRequest($url, $params)
   {
@@ -739,7 +744,7 @@ class Mysellr
     
     $opts = self::$CURL_OPTS;
     
-    if (!in_array($params['method'], $allowedMethods))
+	  if (!isset($params['method']) || !in_array($params['method'], $allowedMethods))
     {
       $params['method'] = 'GET';
     }
@@ -773,23 +778,26 @@ class Mysellr
   	{
   		$opts[CURLOPT_HTTPHEADER][] = 'Content-type: multipart/form-data; charset=utf-8';
   	}
-		
+    
     curl_setopt_array($ch, $opts);
     $result = curl_exec($ch);
-		
-		// CURLE_SSL_CACERT
+    
+    // CURLE_SSL_CACERT
     if (curl_errno($ch) == 60)
     {
       self::errorLog('Invalid or no certificate authority found, '.
                      'using bundled information');
       curl_setopt($ch, CURLOPT_CAINFO,
                   dirname(__FILE__) . '/mysellr_ca_chain_bundle.crt');
+      
       $result = curl_exec($ch);
-    }
+      echo curl_errno($ch);
+    } 
+    
 
     if ($result === FALSE)
     {
-      $e = new MysellrApiException(array(
+      $e = new MySellrApiException(array(
         'error_code' => curl_errno($ch),
         'error' => array(
           'message' => curl_error($ch),
@@ -927,7 +935,7 @@ class Mysellr
    */
   protected function throwAPIException($result)
   {
-    $e = new MysellrApiException($result);
+    $e = new MySellrApiException($result);
     
     $message = $e->getMessage();
     if ((strpos($message, 'Error validating access token') !== false) ||
